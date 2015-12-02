@@ -15,6 +15,7 @@ module Text.Logplex.Parser (
 ) where
 
 import Control.Monad
+import Data.Maybe
 
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Error
@@ -65,11 +66,13 @@ parseSyslog = parse syslogLine "(unknown)"
 
 syslogLine :: GenParser Char st LogEntry
 syslogLine = do
-  priority <- priVal
+  priority <- pri
   version <- version
-  return $ LogEntry priority version "2015-11-31T20:00T+11:00" "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
+  space
+  timestamp <- timestamp
+  return $ LogEntry priority version timestamp "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
 
-priVal = between (char '<') (char '>') (occurrences 1 3 digit)
+pri = between (char '<') (char '>') (occurrences 1 3 digit)
 nonZeroDigit = oneOf "123456789"
 version = liftM2 (:) nonZeroDigit (occurrences 0 2 digit)
 
@@ -77,3 +80,50 @@ occurrences :: Int -> Int -> GenParser Char st Char -> GenParser Char st String
 occurrences min' max' parser
   | min' == max' = count max' parser
 occurrences min' max' parser = try (count max' parser) <|> occurrences min' (max'-1) parser
+
+timestamp :: GenParser Char st String
+timestamp =
+  (nilvalue >> return "")
+  <|> (do
+    date <- fullDate
+    sep <- string "T"
+    time <- fullTime
+    return $ date ++ sep ++ time
+  )
+
+nilvalue :: GenParser Char st String
+nilvalue = string "-"
+
+fullDate :: GenParser Char st String
+fullDate = do
+  year <- count 4 digit
+  sep1 <- string "-"
+  month <- count 2 digit
+  sep2 <- string "-"
+  day <- count 2 digit
+  return $ year ++ sep1 ++ month ++ sep2 ++ day
+
+fullTime :: GenParser Char st String
+fullTime = do
+  time <- partialTime
+  zone <- timeOffset
+  return $ time ++ zone
+
+partialTime :: GenParser Char st String
+partialTime = do
+  time <- time
+  sep2 <- string ":"
+  second <- second
+  frac <- optionMaybe (liftM2 (++) (string ".") (occurrences 1 6 digit))
+  return $ time ++ sep2 ++ second ++ fromMaybe "" frac
+
+timeHour = count 2 digit
+timeMinute = count 2 digit
+second = count 2 digit
+timeOffset = string "Z" <|> timeNumOffset
+timeNumOffset = liftM2 (:) (oneOf "+-") time
+time = do
+  hour <- timeHour
+  sep1 <- string ":"
+  minute <- timeMinute
+  return $ hour ++ sep1 ++ minute
