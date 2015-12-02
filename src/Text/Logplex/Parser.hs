@@ -8,6 +8,7 @@ module Text.Logplex.Parser (
   getProcessId,
   getMessageId,
   getStructuredData,
+  getMessage,
 
   parseLogplex,
 
@@ -28,6 +29,7 @@ data LogEntry = LogEntry { getPriority :: String
                          , getProcessId :: String
                          , getMessageId :: String
                          , getStructuredData :: String
+                         , getMessage :: String
                          }
 
 parseLogplex :: String -> Either ParseError [LogEntry]
@@ -78,7 +80,9 @@ syslogLine = do
   procid <- procid
   space
   msgid <- msgid
-  return $ LogEntry priority version timestamp hostname appName procid msgid "key=value"
+  space
+  structuredData <- structuredData
+  return $ LogEntry priority version timestamp hostname appName procid msgid structuredData "foo bar"
 
 pri = between (char '<') (char '>') (occurrences 1 3 digit)
 nonZeroDigit = oneOf "123456789"
@@ -116,8 +120,29 @@ time = mconcat <$> sequence [timeHour, string ":", timeMinute]
 
 hostname = nilvalue <|> occurrences 1 255 printascii
 
-printascii = oneOf (toEnum <$> [33..126] :: String)
+printascii = oneOf printasciiSet
+printasciiSet = toEnum <$> [33..126] :: String
 
 appName = nilvalue <|> occurrences 1 48 printascii
 procid = nilvalue <|> occurrences 1 128 printascii
 msgid = nilvalue <|> occurrences 1 32 printascii
+
+structuredData = nilvalue <|> many1 sdElement
+
+sdElement :: GenParser Char st String
+sdElement = between (string "[") (string "]") (do
+  sdId <- sdId
+  elems <- many (do
+    space
+    sdParam)
+  return sdId)
+
+sdId = sdName
+
+sdName :: GenParser Char st String
+sdName = occurrences 1 32 (oneOf (filter (`notElem` "= ]\"") printasciiSet))
+
+sdParam = mconcat <$> sequence [paramName, string "=", string "\"", paramValue, string "\""]
+
+paramName = sdName
+paramValue = string ""
