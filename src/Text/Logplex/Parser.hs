@@ -56,7 +56,7 @@ frame = do
     Right le -> return le
 
 msgLen :: GenParser Char st String
-msgLen = liftM2 (:) (oneOf "123456789") (many digit)
+msgLen = liftM2 (:) nonZeroDigit (many digit)
 
 --
 
@@ -64,4 +64,17 @@ parseSyslog :: String -> Either ParseError LogEntry
 parseSyslog = parse syslogLine "(unknown)"
 
 syslogLine :: GenParser Char st LogEntry
-syslogLine = return $ LogEntry "10" "1" "2015-11-31T20:00T+11:00" "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
+syslogLine = do
+  priority <- priVal
+  version <- version
+
+  return $ LogEntry "10" "1" "2015-11-31T20:00T+11:00" "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
+
+priVal = between (char '<') (char '>') (occurrences 1 3 digit)
+nonZeroDigit = oneOf "123456789"
+version = liftM2 (:) nonZeroDigit (occurrences 0 2 digit)
+
+occurrences :: Int -> Int -> GenParser Char st Char -> GenParser Char st String
+occurrences min' max' parser
+  | min' == max' = count max' parser
+occurrences min' max' parser = try (count max' parser) <|> occurrences min' (max'-1) parser
