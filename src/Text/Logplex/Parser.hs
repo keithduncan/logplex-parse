@@ -67,8 +67,7 @@ syslogLine :: GenParser Char st LogEntry
 syslogLine = do
   priority <- priVal
   version <- version
-
-  return $ LogEntry "10" "1" "2015-11-31T20:00T+11:00" "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
+  return $ LogEntry priority version "2015-11-31T20:00T+11:00" "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
 
 priVal = between (char '<') (char '>') (occurrences 1 3 digit)
 nonZeroDigit = oneOf "123456789"
