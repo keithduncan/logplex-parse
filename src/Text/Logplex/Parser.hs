@@ -74,7 +74,11 @@ syslogLine = do
   hostname <- hostname
   space
   appName <- appName
-  return $ LogEntry priority version timestamp hostname appName "420" "" "key=value"
+  space
+  procid <- procid
+  space
+  msgid <- msgid
+  return $ LogEntry priority version timestamp hostname appName procid msgid "key=value"
 
 pri = between (char '<') (char '>') (occurrences 1 3 digit)
 nonZeroDigit = oneOf "123456789"
@@ -115,3 +119,5 @@ hostname = nilvalue <|> occurrences 1 255 printascii
 printascii = oneOf (toEnum <$> [33..126] :: String)
 
 appName = nilvalue <|> occurrences 1 48 printascii
+procid = nilvalue <|> occurrences 1 128 printascii
+msgid = nilvalue <|> occurrences 1 32 printascii
