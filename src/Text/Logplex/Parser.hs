@@ -1,14 +1,13 @@
 module Text.Logplex.Parser (
   LogEntry,
-
-  priority,
-  version,
-  timestamp,
-  hostname,
-  appname,
-  processId,
-  messageId,
-  structuredData,
+  getPriority,
+  getVersion,
+  getTimestamp,
+  getHostname,
+  getAppname,
+  getProcessId,
+  getMessageId,
+  getStructuredData,
 
   parseLogplex,
 
@@ -20,14 +19,14 @@ import Control.Monad
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Error
 
-data LogEntry = LogEntry { priority :: String
-                         , version :: String
-                         , timestamp :: String
-                         , hostname :: String
-                         , appname :: String
-                         , processId :: String
-                         , messageId :: String
-                         , structuredData :: String
+data LogEntry = LogEntry { getPriority :: String
+                         , getVersion :: String
+                         , getTimestamp :: String
+                         , getHostname :: String
+                         , getAppname :: String
+                         , getProcessId :: String
+                         , getMessageId :: String
+                         , getStructuredData :: String
                          }
 
 parseLogplex :: String -> Either ParseError [LogEntry]
