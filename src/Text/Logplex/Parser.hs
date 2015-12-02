@@ -84,32 +84,14 @@ occurrences min' max' parser = try (count max' parser) <|> occurrences min' (max
 timestamp :: GenParser Char st String
 timestamp =
   (nilvalue >> return "")
-  <|> (do
-    date <- fullDate
-    sep <- string "T"
-    time <- fullTime
-    return $ date ++ sep ++ time
-  )
+  <|> (mconcat <$> sequence [fullDate, string "T", fullTime])
 
-nilvalue :: GenParser Char st String
 nilvalue = string "-"
 
-fullDate :: GenParser Char st String
-fullDate = do
-  year <- count 4 digit
-  sep1 <- string "-"
-  month <- count 2 digit
-  sep2 <- string "-"
-  day <- count 2 digit
-  return $ year ++ sep1 ++ month ++ sep2 ++ day
+fullDate = mconcat <$> sequence [count 4 digit, string "-", count 2 digit, string "-", count 2 digit]
 
-fullTime :: GenParser Char st String
-fullTime = do
-  time <- partialTime
-  zone <- timeOffset
-  return $ time ++ zone
+fullTime = liftM2 (++) partialTime timeOffset
 
-partialTime :: GenParser Char st String
 partialTime = do
   time <- time
   sep2 <- string ":"
@@ -122,8 +104,4 @@ timeMinute = count 2 digit
 second = count 2 digit
 timeOffset = string "Z" <|> timeNumOffset
 timeNumOffset = liftM2 (:) (oneOf "+-") time
-time = do
-  hour <- timeHour
-  sep1 <- string ":"
-  minute <- timeMinute
-  return $ hour ++ sep1 ++ minute
+time = mconcat <$> sequence [timeHour, string ":", timeMinute]
