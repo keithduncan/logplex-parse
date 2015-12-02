@@ -11,17 +11,20 @@ module Text.Logplex.Parser (
   structuredData,
 
   parseLogplex,
+
+  parseSyslog,
 ) where
 
 import Control.Monad
 
 import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec.Error
 
 data LogEntry = LogEntry { priority :: String
                          , version :: String
                          , timestamp :: String
                          , hostname :: String
-                         , appName :: String
+                         , appname :: String
                          , processId :: String
                          , messageId :: String
                          , structuredData :: String
@@ -43,9 +46,23 @@ logplexDocument = do
 frame :: GenParser Char st LogEntry
 frame = do
   len <- msgLen
-  space
+  let leni = read len :: Int
 
-  return $ LogEntry "10" "1" "2015-11-31T20:00T+11:00" "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
+  space
+  frameContent <- replicateM leni anyChar
+
+  case parseSyslog frameContent of
+    -- should probably include all the errors?
+    Left err -> fail $ head $ messageString <$> errorMessages err
+    Right le -> return le
 
 msgLen :: GenParser Char st String
 msgLen = liftM2 (:) (oneOf "123456789") (many digit)
+
+--
+
+parseSyslog :: String -> Either ParseError LogEntry
+parseSyslog = parse syslogLine "(unknown)"
+
+syslogLine :: GenParser Char st LogEntry
+syslogLine = return $ LogEntry "10" "1" "2015-11-31T20:00T+11:00" "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
