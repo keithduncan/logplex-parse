@@ -70,7 +70,9 @@ syslogLine = do
   version <- version
   space
   timestamp <- timestamp
-  return $ LogEntry priority version timestamp "keiths-macbook-pro.local" "my-app" "420" "" "key=value"
+  space
+  hostname <- hostname
+  return $ LogEntry priority version timestamp hostname "my-app" "420" "" "key=value"
 
 pri = between (char '<') (char '>') (occurrences 1 3 digit)
 nonZeroDigit = oneOf "123456789"
@@ -105,3 +107,7 @@ second = count 2 digit
 timeOffset = string "Z" <|> timeNumOffset
 timeNumOffset = liftM2 (:) (oneOf "+-") time
 time = mconcat <$> sequence [timeHour, string ":", timeMinute]
+
+hostname = nilvalue <|> occurrences 1 255 printascii
+
+printascii = oneOf (toEnum <$> [33..126] :: String)
