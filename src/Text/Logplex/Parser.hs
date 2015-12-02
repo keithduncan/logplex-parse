@@ -1,6 +1,15 @@
 module Text.Logplex.Parser (
   LogEntry,
 
+  priority,
+  version,
+  timestamp,
+  hostname,
+  appname,
+  processId,
+  messageId,
+  structuredData,
+
   parseLogplex,
 ) where
 
