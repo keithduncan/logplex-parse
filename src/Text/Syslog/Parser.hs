@@ -18,10 +18,7 @@ module Text.Syslog.Parser (
 import Control.Monad
 import Data.Maybe
 
-import Data.List as L
-import Data.Text as T
-
-import Text.ParserCombinators.Parsec as P
+import Text.ParserCombinators.Parsec
 
 data LogEntry = LogEntry { getPriority :: String
                          , getVersion :: String
@@ -34,7 +31,7 @@ data LogEntry = LogEntry { getPriority :: String
                          , getMessage :: String
                          }
 
-parseSyslog :: Text -> Either ParseError LogEntry
+parseSyslog :: String -> Either ParseError LogEntry
 parseSyslog = parse syslogLine "(unknown)"
 
 syslogLine = LogEntry <$>
@@ -54,8 +51,8 @@ nonZeroDigit = oneOf "123456789"
 version = liftM2 (:) nonZeroDigit (occurrences 0 2 digit)
 
 occurrences min' max' parser
-  | min' == max' = P.count max' parser
-occurrences min' max' parser = try (P.count max' parser) <|> occurrences min' (max'-1) parser
+  | min' == max' = count max' parser
+occurrences min' max' parser = try (count max' parser) <|> occurrences min' (max'-1) parser
 
 timestamp =
  (nilvalue >> return "")
@@ -63,7 +60,7 @@ timestamp =
 
 nilvalue = string "-"
 
-fullDate = mconcat <$> sequence [P.count 4 digit, string "-", P.count 2 digit, string "-", P.count 2 digit]
+fullDate = mconcat <$> sequence [count 4 digit, string "-", count 2 digit, string "-", count 2 digit]
 
 fullTime = liftM2 (++) partialTime timeOffset
 
@@ -74,9 +71,9 @@ partialTime = do
  frac <- optionMaybe (liftM2 (++) (string ".") (occurrences 1 6 digit))
  return $ time ++ sep2 ++ second ++ fromMaybe "" frac
 
-timeHour = P.count 2 digit
-timeMinute = P.count 2 digit
-second = P.count 2 digit
+timeHour = count 2 digit
+timeMinute = count 2 digit
+second = count 2 digit
 timeOffset = string "Z" <|> timeNumOffset
 timeNumOffset = liftM2 (:) (oneOf "+-") time
 time = mconcat <$> sequence [timeHour, string ":", timeMinute]
@@ -96,7 +93,7 @@ sdElement = between (char '[') (char ']') (liftM2 (:) sdId (many (space >> sdPar
 
 sdId = sdName
 
-sdName = occurrences 1 32 (oneOf (L.filter (`notElem` "= ]\"") printasciiSet))
+sdName = occurrences 1 32 (oneOf (filter (`notElem` "= ]\"") printasciiSet))
 
 sdParam = mconcat <$> sequence [paramName, string "=", string "\"", paramValue, string "\""]
 
