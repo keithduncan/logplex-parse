@@ -99,13 +99,14 @@ sdId = sdName
 
 sdName = occurrences 1 32 (oneOf (filter (`notElem` "= ]\"") printasciiSet))
 
-sdParam = liftM2 (,) paramName (string "=" >> quoted (many1 $ escaped "\"\\]"))
+sdParam = liftM2 (,) paramName (string "=" >> quoted (many1 $ escaped '\\' "\"]"))
 
 quoted = between doubleQuote doubleQuote
 doubleQuote = char '"'
 
 paramName = sdName
 
-escaped chars = noneOf chars <|> choice (fmap (try . (char '\\' >>) . char) chars)
+escaped echar chars = let echars = echar:chars
+                       in noneOf echars <|> choice (fmap (try . (char echar >>) . char) echars)
 
 message = return "foo bar"
