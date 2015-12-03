@@ -15,6 +15,7 @@ module Text.Syslog.Parser (
 
 import Control.Monad
 import Data.Maybe
+import Data.List
 
 import Text.ParserCombinators.Parsec
 
@@ -93,19 +94,15 @@ appName = nilvalue <|> occurrences 1 48 printascii
 procid = nilvalue <|> occurrences 1 128 printascii
 msgid = nilvalue <|> occurrences 1 32 printascii
 
-structuredData = nilvalue <|> many1 sdElement
+structuredData = (nilvalue >> return []) <|> many1 sdElement
 
-sdElement :: GenParser Char st String
-sdElement = between (string "[") (string "]") (do
- sdId <- sdId
- elems <- many (do
-   space
-   sdParam)
- return sdId)
+sdElement = between (char '[') (char ']') (do
+  sdId <- sdId
+  sdParams <- many (space >> sdParam)
+  return $ sdId ++ unwords sdParams)
 
 sdId = sdName
 
-sdName :: GenParser Char st String
 sdName = occurrences 1 32 (oneOf (filter (`notElem` "= ]\"") printasciiSet))
 
 sdParam = mconcat <$> sequence [paramName, string "=", string "\"", paramValue, string "\""]
