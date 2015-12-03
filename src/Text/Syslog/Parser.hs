@@ -3,16 +3,12 @@
 module Text.Syslog.Parser (
   parseSyslog,
 
-  LogEntry,
-  getPriority,
-  getVersion,
-  getTimestamp,
-  getHostname,
-  getAppname,
-  getProcessId,
-  getMessageId,
-  getStructuredData,
-  getMessage,
+  LogEntry(..),
+
+  StructuredData(..),
+  Key,
+  Value,
+  Param,
 
   nonZeroDigit,
 ) where
@@ -35,11 +31,11 @@ data LogEntry = LogEntry { getPriority :: String
                          , getMessageId :: String
                          , getStructuredData :: [StructuredData]
                          , getMessage :: String
-                         } deriving (Show)
+                         } deriving (Show, Eq)
 
 data StructuredData = StructuredData { getId :: String
                                      , getParams :: [Param]
-                                     } deriving (Show)
+                                     } deriving (Show, Eq)
 
 type Key = String
 type Value = String
