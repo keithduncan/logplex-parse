@@ -5,12 +5,15 @@ module Text.Logplex.Parser (
 import Control.Monad
 import Data.Maybe
 
-import Text.ParserCombinators.Parsec
+import Data.Text as T
+import Data.List as L
+
+import Text.ParserCombinators.Parsec as P
 import Text.ParserCombinators.Parsec.Error
 
 import Text.Syslog.Parser
 
-parseLogplex :: String -> Either ParseError [LogEntry]
+parseLogplex :: Text -> Either ParseError [LogEntry]
 parseLogplex = parse logplexDocument "(unknown)"
 
 logplexDocument :: GenParser Char st [LogEntry]
@@ -33,7 +36,7 @@ frame = do
 
   case parseSyslog frameContent of
     -- should probably include all the errors?
-    Left err -> fail $ head $ messageString <$> errorMessages err
+    Left err -> fail $ L.head $ messageString <$> errorMessages err
     Right le -> return le
 
 msgLen :: GenParser Char st String
