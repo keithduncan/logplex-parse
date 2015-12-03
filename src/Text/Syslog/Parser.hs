@@ -109,4 +109,10 @@ paramName = sdName
 escaped echar chars = let echars = echar:chars
                        in noneOf echars <|> choice (fmap (try . (char echar >>) . char) echars)
 
-message = return "foo bar"
+message = msgUtf8 <|> msgAny
+
+msgUtf8 = try (bom >> utf8String)
+utf8String = many anyChar
+bom = string ['\xEF', '\xBB', '\xBF']
+
+msgAny = utf8String
