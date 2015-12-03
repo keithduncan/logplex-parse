@@ -22,9 +22,13 @@ import Data.Maybe
 
 import Text.ParserCombinators.Parsec
 
+import Data.Time.ISO8601
+import Data.Time.Clock
+import Text.Printf
+
 data LogEntry = LogEntry { getPriority :: String
                          , getVersion :: String
-                         , getTimestamp :: String
+                         , getTimestamp :: UTCTime
                          , getHostname :: String
                          , getAppname :: String
                          , getProcessId :: String
@@ -60,8 +64,11 @@ pri = between (char '<') (char '>') (countBetween 1 3 digit) <?> "priority value
 nonZeroDigit = oneOf "123456789"
 version = liftM2 (:) nonZeroDigit (countBetween 0 2 digit) <?> "syslog protocol version"
 
--- TODO parse this into a DateTime
-timestamp = (nilvalue >> return "") <|> (mconcat <$> sequence [fullDate, string "T", fullTime]) <?> "ISO8601 full date time timestamp with timezone"
+timestamp = do
+  time <- (nilvalue >> return "") <|> (mconcat <$> sequence [fullDate, string "T", fullTime]) <?> "ISO8601 full date time timestamp with timezone"
+  case parseISO8601 time of
+    Nothing -> fail $ printf "invalid timestamp `%s`" time
+    Just t  -> return t
 
 nilvalue = string "-"
 
