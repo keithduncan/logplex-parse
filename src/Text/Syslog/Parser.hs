@@ -31,11 +31,11 @@ data LogEntry = LogEntry { getPriority :: String
                          , getMessageId :: String
                          , getStructuredData :: [StructuredData]
                          , getMessage :: String
-                         }
+                         } deriving (Show)
 
 data StructuredData = StructuredData { getId :: String
                                      , getParams :: [Param]
-                                     }
+                                     } deriving (Show)
 
 type Key = String
 type Value = String
