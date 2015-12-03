@@ -56,14 +56,14 @@ syslogLine = LogEntry <$>
              (space >> message) <*
              eof
 
-pri = between (char '<') (char '>') (occurrences 1 3 digit)
+pri = between (char '<') (char '>') (countBetween 1 3 digit)
 nonZeroDigit = oneOf "123456789"
-version = liftM2 (:) nonZeroDigit (occurrences 0 2 digit)
+version = liftM2 (:) nonZeroDigit (countBetween 0 2 digit)
 
-occurrences min' max' parser
+countBetween min' max' parser
   | min' > max'  = error "you dun goofed"
   | min' == max' = count max' parser
-  | otherwise    = try (count max' parser) <|> occurrences min' (max'-1) parser
+  | otherwise    = try (count max' parser) <|> countBetween min' (max'-1) parser
 
 timestamp = (nilvalue >> return "") <|> (mconcat <$> sequence [fullDate, string "T", fullTime])
 
@@ -73,7 +73,7 @@ fullDate = mconcat <$> sequence [count 4 digit, string "-", count 2 digit, strin
 
 fullTime = liftM2 (++) partialTime timeOffset
 
-partialTime = mconcat <$> sequence [time, string ":", second, fromMaybe "" <$> optionMaybe (liftM2 (++) (string ".") (occurrences 1 6 digit))]
+partialTime = mconcat <$> sequence [time, string ":", second, fromMaybe "" <$> optionMaybe (liftM2 (++) (string ".") (countBetween 1 6 digit))]
 
 timeHour = count 2 digit
 timeMinute = count 2 digit
@@ -82,14 +82,14 @@ timeOffset = string "Z" <|> timeNumOffset
 timeNumOffset = liftM2 (:) (oneOf "+-") time
 time = mconcat <$> sequence [timeHour, string ":", timeMinute]
 
-hostname = nilvalue <|> occurrences 1 255 printascii
+hostname = nilvalue <|> countBetween 1 255 printascii
 
 printascii = oneOf printasciiSet
 printasciiSet = toEnum <$> [33..126] :: String
 
-appName = nilvalue <|> occurrences 1 48 printascii
-procid = nilvalue <|> occurrences 1 128 printascii
-msgid = nilvalue <|> occurrences 1 32 printascii
+appName = nilvalue <|> countBetween 1 48 printascii
+procid = nilvalue <|> countBetween 1 128 printascii
+msgid = nilvalue <|> countBetween 1 32 printascii
 
 structuredData = (nilvalue >> return []) <|> many1 sdElement
 
@@ -97,7 +97,7 @@ sdElement = between (char '[') (char ']') (liftM2 StructuredData sdId (many (spa
 
 sdId = sdName
 
-sdName = occurrences 1 32 (oneOf (filter (`notElem` "= ]\"") printasciiSet))
+sdName = countBetween 1 32 (oneOf (filter (`notElem` "= ]\"") printasciiSet))
 
 sdParam = liftM2 (,) paramName (string "=" >> quoted (many1 $ escaped '\\' "\"]"))
 
