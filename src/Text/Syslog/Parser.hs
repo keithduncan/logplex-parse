@@ -61,7 +61,7 @@ nonZeroDigit = oneOf "123456789"
 version = liftM2 (:) nonZeroDigit (countBetween 0 2 digit)
 
 countBetween min' max' parser
-  | min' > max'  = error "you dun goofed"
+  | min' > max'  = error "min occurences cannot be greater than max occurrences"
   | min' == max' = count max' parser
   | otherwise    = try (count max' parser) <|> countBetween min' (max'-1) parser
 
