@@ -26,7 +26,7 @@ data LogEntry = LogEntry { getPriority :: String
                          , getAppname :: String
                          , getProcessId :: String
                          , getMessageId :: String
-                         , getStructuredData :: String
+                         , getStructuredData :: [String]
                          , getMessage :: String
                          }
 
@@ -57,7 +57,7 @@ version = liftM2 (:) nonZeroDigit (occurrences 0 2 digit)
 
 occurrences :: Int -> Int -> GenParser Char st Char -> GenParser Char st String
 occurrences min' max' parser
- | min' == max' = count max' parser
+  | min' == max' = count max' parser
 occurrences min' max' parser = try (count max' parser) <|> occurrences min' (max'-1) parser
 
 timestamp :: GenParser Char st String
