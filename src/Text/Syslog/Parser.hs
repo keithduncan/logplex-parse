@@ -56,11 +56,12 @@ syslogLine = LogEntry <$>
              (space >> message) <*
              eof
 
-pri = between (char '<') (char '>') (countBetween 1 3 digit)
+pri = between (char '<') (char '>') (countBetween 1 3 digit) <?> "priority value"
 nonZeroDigit = oneOf "123456789"
-version = liftM2 (:) nonZeroDigit (countBetween 0 2 digit)
+version = liftM2 (:) nonZeroDigit (countBetween 0 2 digit) <?> "syslog protocol version"
 
-timestamp = (nilvalue >> return "") <|> (mconcat <$> sequence [fullDate, string "T", fullTime])
+-- TODO parse this into a DateTime
+timestamp = (nilvalue >> return "") <|> (mconcat <$> sequence [fullDate, string "T", fullTime]) <?> "ISO8601 full date time timestamp with timezone"
 
 nilvalue = string "-"
 
@@ -77,14 +78,14 @@ timeOffset = string "Z" <|> timeNumOffset
 timeNumOffset = liftM2 (:) (oneOf "+-") time
 time = mconcat <$> sequence [timeHour, string ":", timeMinute]
 
-hostname = nilvalue <|> countBetween 1 255 printascii
+hostname = nilvalue <|> countBetween 1 255 printascii <?> "hostname"
 
 printascii = oneOf printasciiSet
 printasciiSet = toEnum <$> [33..126] :: String
 
-appName = nilvalue <|> countBetween 1 48 printascii
-procid = nilvalue <|> countBetween 1 128 printascii
-msgid = nilvalue <|> countBetween 1 32 printascii
+appName = nilvalue <|> countBetween 1 48 printascii <?> "application name"
+procid = nilvalue <|> countBetween 1 128 printascii <?> "process id"
+msgid = nilvalue <|> countBetween 1 32 printascii <?> "message id"
 
 structuredData = (nilvalue >> return []) <|> many1 sdElement
 
@@ -104,7 +105,7 @@ paramName = sdName
 escaped echar chars = let echars = echar:chars
                        in noneOf echars <|> choice (fmap (try . (char echar >>) . char) echars)
 
-message = msgUtf8 <|> msgAny
+message = msgUtf8 <|> msgAny <?> "message"
 
 msgUtf8 = try (bom >> utf8String)
 utf8String = many anyChar
