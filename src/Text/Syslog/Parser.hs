@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Text.Syslog.Parser (
   parseSyslog,
 
@@ -97,12 +99,13 @@ sdId = sdName
 
 sdName = occurrences 1 32 (oneOf (filter (`notElem` "= ]\"") printasciiSet))
 
-sdParam = liftM2 (,) paramName (string "=" >> quoted paramValue)
+sdParam = liftM2 (,) paramName (string "=" >> quoted (many1 $ escaped "\"\\]"))
 
 quoted = between doubleQuote doubleQuote
 doubleQuote = char '"'
 
 paramName = sdName
-paramValue = string ""
+
+escaped chars = noneOf chars <|> choice (fmap (\c -> try (char '\\' >> char c)) chars)
 
 message = return "foo bar"
