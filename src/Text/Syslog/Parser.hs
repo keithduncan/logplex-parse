@@ -60,11 +60,6 @@ pri = between (char '<') (char '>') (countBetween 1 3 digit)
 nonZeroDigit = oneOf "123456789"
 version = liftM2 (:) nonZeroDigit (countBetween 0 2 digit)
 
-countBetween min' max' parser
-  | min' > max'  = error "min occurences cannot be greater than max occurrences"
-  | min' == max' = count max' parser
-  | otherwise    = try (count max' parser) <|> countBetween min' (max'-1) parser
-
 timestamp = (nilvalue >> return "") <|> (mconcat <$> sequence [fullDate, string "T", fullTime])
 
 nilvalue = string "-"
@@ -116,3 +111,8 @@ utf8String = many anyChar
 bom = string ['\xEF', '\xBB', '\xBF']
 
 msgAny = utf8String
+
+countBetween min' max' parser
+  | min' > max'  = error "min occurences cannot be greater than max occurrences"
+  | min' == max' = count max' parser
+  | otherwise    = try (count max' parser) <|> countBetween min' (max'-1) parser
