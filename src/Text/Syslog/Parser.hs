@@ -106,6 +106,6 @@ doubleQuote = char '"'
 
 paramName = sdName
 
-escaped chars = noneOf chars <|> choice (fmap (\c -> try (char '\\' >> char c)) chars)
+escaped chars = noneOf chars <|> choice (fmap (try . (char '\\' >>) . char) chars)
 
 message = return "foo bar"
