@@ -37,23 +37,17 @@ data LogEntry = LogEntry { getPriority :: String
 parseSyslog :: Text -> Either ParseError LogEntry
 parseSyslog = parse syslogLine "(unknown)"
 
-syslogLine :: GenParser Char st LogEntry
-syslogLine = do
- priority <- pri
- version <- version
- space
- timestamp <- timestamp
- space
- hostname <- hostname
- space
- appName <- appName
- space
- procid <- procid
- space
- msgid <- msgid
- space
- structuredData <- structuredData
- return $ LogEntry priority version timestamp hostname appName procid msgid structuredData "foo bar"
+syslogLine = LogEntry <$>
+             pri <*>
+             version <*>
+             (space >> timestamp) <*>
+             (space >> hostname) <*>
+             (space >> appName) <*>
+             (space >> procid) <*>
+             (space >> msgid) <*>
+             (space >> structuredData) <*>
+             (space >> message) <*
+             eof
 
 pri = between (char '<') (char '>') (occurrences 1 3 digit)
 nonZeroDigit = oneOf "123456789"
@@ -108,3 +102,5 @@ sdParam = mconcat <$> sequence [paramName, string "=", string "\"", paramValue, 
 
 paramName = sdName
 paramValue = string ""
+
+message = return "foo bar"
