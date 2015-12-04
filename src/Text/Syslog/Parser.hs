@@ -116,6 +116,7 @@ bom = string ['\xEF', '\xBB', '\xBF']
 
 msgAny = utf8String
 
+{-# CONTRACT countBetween :: { x y | x < y } -> Ok #-}
 countBetween min' max' parser
   | min' > max'  = error "min occurences cannot be greater than max occurrences"
   | min' == max' = count max' parser
