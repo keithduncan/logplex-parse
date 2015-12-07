@@ -22,11 +22,9 @@ logplexDocument = many frame <* eof
 
 frame :: GenParser Char st LogEntry
 frame = do
-  len <- msgLen
-  let leni = read len :: Int
-
+  len <- read <$> msgLen
   space
-  frameContent <- replicateM leni anyChar
+  frameContent <- replicateM len anyChar
 
   case parseSyslog frameContent of
     -- should probably include all the errors?
