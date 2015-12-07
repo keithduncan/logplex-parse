@@ -14,10 +14,7 @@ parseLogplex :: String -> Either ParseError [LogEntry]
 parseLogplex = parse logplexDocument "(unknown)"
 
 logplexDocument :: GenParser Char st [LogEntry]
-logplexDocument = do
-  result <- many frame
-  eof
-  return result
+logplexDocument = many frame <* eof
 
 {-
   <https://tools.ietf.org/html/rfc6587#section-3.4.1>
