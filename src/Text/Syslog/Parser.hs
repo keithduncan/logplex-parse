@@ -106,7 +106,7 @@ doubleQuote = char '"'
 paramName = sdName
 
 escaped echar chars = let echars = echar:chars
-                       in noneOf echars <|> choice (fmap (try . (char echar >>) . char) echars)
+                       in noneOf echars <|> choice ((try . (char echar >>) . char) <$> echars)
 
 message = msgUtf8 <|> msgAny <?> "message"
 
