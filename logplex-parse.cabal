@@ -77,7 +77,8 @@ test-suite tests
   ghc-options: -Wall
   default-extensions:  OverloadedStrings
   type: exitcode-stdio-1.0
-  main-is: tests/HSpecTests.hs
+  hs-source-dirs: spec
+  main-is: Spec.hs
   build-depends:  base,
                   logplex-parse,
                   hspec >= 1.8,
