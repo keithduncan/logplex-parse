@@ -28,7 +28,7 @@ frame = do
 
   case parseSyslog frameContent of
     -- should probably include all the errors?
-    Left err -> fail $ head $ messageString <$> errorMessages err
+    Left err -> fail . head $ messageString <$> errorMessages err
     Right le -> return le
 
 msgLen :: GenParser Char st String
