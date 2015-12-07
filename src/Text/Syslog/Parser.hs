@@ -30,7 +30,7 @@ data LogEntry = LogEntry { getPriority :: String
                          , getProcessId :: String
                          , getMessageId :: String
                          , getStructuredData :: [StructuredData]
-                         , getMessage :: String
+                         , getMessage :: Maybe String
                          } deriving (Show, Eq)
 
 data StructuredData = StructuredData { getId :: String
@@ -53,7 +53,7 @@ syslogLine = LogEntry <$>
              (space >> procid) <*>
              (space >> msgid) <*>
              (space >> structuredData) <*>
-             (space >> message) <*
+             optionMaybe (space >> message) <*
              eof
 
 pri = between (char '<') (char '>') (countBetween 1 3 digit) <?> "priority value"
