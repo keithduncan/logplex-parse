@@ -5,8 +5,6 @@ import Text.Syslog.Parser
 import Data.Time.Clock.POSIX
 import Test.Hspec
 
-fromRight :: Either a b -> b
-fromRight (Left _) = error "not right"
 fromRight (Right x) = x
 
 spec = do
