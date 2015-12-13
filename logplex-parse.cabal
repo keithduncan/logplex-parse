@@ -84,6 +84,6 @@ test-suite tests
   main-is: Spec.hs
   build-depends:  base >= 4.8 && <4.9,
                   logplex-parse -any,
-                  hspec >= 1.8 && <1.9,
+                  hspec >= 2.2 && <2.3,
                   time >= 1.5 && <1.6
   default-language: Haskell2010
