@@ -52,7 +52,9 @@ syslogLine = LogEntry <$>
              (space >> appName) <*>
              (space >> procid) <*>
              (space >> msgid) <*>
-             (space >> structuredData) <*>
+             -- this doesn't strictly conform to the RFC5424 BNF, but Heroku generates syslog
+             -- messages that omit the nilvalue in place of structured data
+            (fromMaybe [] <$> optionMaybe (try (space >> structuredData))) <*>
              optionMaybe (space >> message) <*
              eof
 
