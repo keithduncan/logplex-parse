@@ -19,3 +19,8 @@ spec = do
       let logEntries = parseLogplex "277 <158>1 2015-12-13T06:02:17.590861+00:00 host heroku router - at=error code=H10 desc=\"App crashed\" method=POST path=\"/crash\" host=ancient-savannah-2923.herokuapp.com request_id=fdcf3bf3-97d3-48a5-8eff-3b28789e36ee fwd=\"120.148.233.212\" dyno= connect= service= status=503 bytes=\n"
       let entry = LogEntry "158" "1" (posixSecondsToUTCTime 1449986537.590861) "host" "heroku" "router" "-" [] (Just "at=error code=H10 desc=\"App crashed\" method=POST path=\"/crash\" host=ancient-savannah-2923.herokuapp.com request_id=fdcf3bf3-97d3-48a5-8eff-3b28789e36ee fwd=\"120.148.233.212\" dyno= connect= service= status=503 bytes=\n")
       logEntries `shouldBe` Right [entry]
+
+    it "should parse example heroku H12s" $ do
+      let logEntries = parseLogplex "288 <158>1 2015-12-13T07:13:04.610888+00:00 host heroku router - at=error code=H14 desc=\"No web processes running\" method=GET path=\"/ping\" host=ancient-savannah-2923.herokuapp.com request_id=f6e91d26-b363-4837-8208-00dcf6d7b2f0 fwd=\"120.148.233.212\" dyno= connect= service= status=503 bytes=\n"
+      let entry = LogEntry "158" "1" (posixSecondsToUTCTime 1449990784.610888) "host" "heroku" "router" "-" [] (Just "at=error code=H14 desc=\"No web processes running\" method=GET path=\"/ping\" host=ancient-savannah-2923.herokuapp.com request_id=f6e91d26-b363-4837-8208-00dcf6d7b2f0 fwd=\"120.148.233.212\" dyno= connect= service= status=503 bytes=\n")
+      logEntries `shouldBe` Right [entry]
